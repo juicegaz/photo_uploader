@@ -5,6 +5,10 @@ __pycache__/
 # The progress database is generated at runtime, not source code
 progress.db
 
+# Google API secrets — never commit these to a public repo
+credentials.json
+token.json
+
 # Virtual environment folders (if you create one later)
 venv/
 .venv/
