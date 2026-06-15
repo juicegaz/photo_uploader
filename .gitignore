@@ -9,6 +9,9 @@ progress.db
 credentials.json
 token.json
 
+# Local session notes — not for the public repo
+HANDOFF.md
+
 # Virtual environment folders (if you create one later)
 venv/
 .venv/
