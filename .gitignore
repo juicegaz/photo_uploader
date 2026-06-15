@@ -1,0 +1,20 @@
+# Python cache and compiled files
+__pycache__/
+*.pyc
+
+# The progress database is generated at runtime, not source code
+progress.db
+
+# Virtual environment folders (if you create one later)
+venv/
+.venv/
+env/
+
+# Local Claude Code settings (personal, not shared)
+.claude/settings.local.json
+
+# Editor / OS noise
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

@@ -1,0 +1,12 @@
+# Python dependencies for photo_uploader
+#
+# Good news: scanner.py and deduplicator.py only use Python's built-in
+# standard library (os, hashlib, sqlite3, argparse, datetime), so there is
+# nothing to install yet.
+#
+# The packages below will be needed later for the Google Photos uploader.
+# They are commented out (with a leading #) so they are NOT installed yet.
+# Uncomment them when we start building uploader.py.
+#
+# google-auth-oauthlib
+# google-api-python-client
