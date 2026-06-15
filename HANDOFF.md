@@ -7,7 +7,7 @@ things. Platform: Windows 11, PowerShell. Project dir: C:\Projects\PhotoUploader
 
 ## What the project is
 A Python tool to scan a folder for photos/videos, remove duplicates, and
-(eventually) upload to Google Photos. Building/testing locally first.
+upload unique files to Google Photos. All three steps are now implemented.
 
 ## Files (all in C:\Projects\PhotoUploader)
 - scanner.py        — DONE. Recursively walks a dir, finds .jpg/.jpeg/.png/
@@ -21,15 +21,21 @@ A Python tool to scan a folder for photos/videos, remove duplicates, and
                       per-file progress. CLI supports --dir, --limit N (process
                       only first N files), --quiet (checkpoint every 100 files
                       instead of per-file; warnings still print).
-- main.py           — DONE. Pipeline: scan -> dedupe. Supports --dir, --limit,
-                      --quiet. Upload step is a placeholder message.
+- main.py           — DONE. Full pipeline: scan -> dedupe -> upload. Supports
+                      --dir, --limit, --quiet. All three steps wired up.
+- uploader.py       — DONE. OAuth2 auth flow (browser popup on first run,
+                      token.json saved for subsequent runs, auto-refresh on
+                      expiry). Two-step Google Photos upload: POST bytes to get
+                      upload token, then POST to create media item. Functions:
+                      get_authorized_session(), upload_file(), upload_files(),
+                      print_upload_summary().
 - config.py         — Shared constants (ALLOWED_EXTENSIONS, DATABASE_FILE,
                       CHUNK_SIZE).
-- uploader.py       — Intentionally EMPTY placeholder. Google Photos upload
-                      NOT implemented yet (deliberate — testing locally first).
-- requirements.txt  — No active deps (stdlib only). google-auth-oauthlib and
-                      google-api-python-client commented out for future uploader.
+- requirements.txt  — Two active deps: google-auth-oauthlib,
+                      google-api-python-client. Install with:
+                      `pip install -r requirements.txt`
 - .gitignore        — Ignores __pycache__, *.pyc, progress.db, venv dirs,
+                      credentials.json, token.json,
                       .claude/settings.local.json, editor/OS noise.
 
 ## Key technical notes
@@ -38,21 +44,36 @@ A Python tool to scan a folder for photos/videos, remove duplicates, and
   could add full-file hash tie-breaker later if needed.
 - progress.db persists hashes across runs. After a --limit test run, those
   files count as duplicates in later runs. Delete progress.db for a clean run.
+- Auth: credentials.json = Google Cloud OAuth client ID/secret (app's ID card,
+  downloaded from GCP Console once). token.json = user's login token, created
+  automatically on first run after browser approval. Neither file is in git.
+- Upload scope is "appendonly" — can upload but cannot read or delete existing
+  photos. This is intentional (least privilege).
+- Google Photos upload is two steps: (1) POST raw bytes → get upload token,
+  (2) POST upload token → create media item. Both must succeed.
 
-## Git / GitHub state — DONE
-- Local git repo initialized (branch: main). First commit made (7c426d2):
-  "Initial commit: photo scanner and deduplicator".
-- Pushed to GitHub: https://github.com/juicegaz/photo_uploader (remote "origin",
-  tracking set up, so plain `git push` works now).
-- Git identity: name juicegaz, GitHub username juicegaz.
+## Git / GitHub state
+- GitHub repo: https://github.com/juicegaz/photo_uploader (public)
+- Branch: main. Remote "origin" set up, so plain `git push` works.
+- Git identity: juicegaz
+- Recent commits:
+    09a9a70  Add README with usage instructions and project overview
+    5a65786  Ignore Google API credentials and token files
+    (uploader changes not yet committed — do that next)
 
 ## Everyday git workflow I'm learning
-  git add .
+  git status           <- see what changed
+  git diff --cached    <- see what's staged (after git add)
+  git add <file>
   git commit -m "message"
   git push
 Auditing: git status / git diff / git log --oneline, plus GitHub Commits tab.
 
 ## Possible next steps (not yet done)
-- Practice round: add a README.md and walk through status->diff->add->commit->push.
-- Run a real end-to-end test (could create dummy test files).
-- Eventually implement uploader.py (Google Photos).
+- Commit and push the uploader work (uploader.py, main.py, requirements.txt,
+  README.md changes).
+- End-to-end test: run `python main.py --dir <real photo folder> --limit 5`
+  and confirm photos appear in Google Photos.
+- Handle already-uploaded files: currently the script re-uploads unique files
+  on every run. Could track uploaded file paths in progress.db to skip them.
+- Add quiet mode to uploader (currently always prints per-file).

@@ -1,10 +1,9 @@
 # Photo Uploader
 
 A Python tool that scans a folder for photos and videos, removes duplicates,
-and (eventually) uploads them to Google Photos.
+and uploads them to Google Photos.
 
-> **Status:** scanning and deduplication work locally. Upload to Google Photos
-> is not implemented yet.
+> **Status:** all three steps are implemented and working.
 
 ---
 
@@ -14,14 +13,19 @@ and (eventually) uploads them to Google Photos.
    with these extensions: `.jpg` `.jpeg` `.png` `.heic` `.mp4`
 2. **Deduplicate** — reads the first 64 KB of each file, computes a hash, and
    flags any file whose content has already been seen as a duplicate
-3. **Upload** — placeholder only (coming later)
+3. **Upload** — sends unique files to your Google Photos library via the
+   Google Photos Library API
 
 ---
 
 ## Requirements
 
-- Python 3.8 or newer (no extra packages to install — everything used is built
-  into Python)
+- Python 3.8 or newer
+- Two packages (install once with the command below):
+
+```powershell
+pip install -r requirements.txt
+```
 
 Check your Python version in PowerShell:
 
@@ -31,24 +35,48 @@ python --version
 
 ---
 
+## First-time Google Photos setup
+
+Before the uploader can talk to your Google Photos account you need to create
+a credentials file. This is a one-time step.
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) and sign
+   in with your Google account
+2. Create a new project (name it anything, e.g. `photo-uploader`)
+3. Search for **"Photos Library API"** and enable it
+4. Go to **APIs & Services → Credentials → + Create Credentials → OAuth client ID**
+   - If prompted, configure the consent screen first (choose External, fill in
+     app name and your email, save, then come back)
+   - Application type: **Desktop app**
+5. Download the JSON file and save it to this folder as **`credentials.json`**
+
+On the **first run** a browser window will open asking you to log in and click
+Allow. After that a `token.json` file is saved and the browser step is skipped
+on all future runs.
+
+> Both `credentials.json` and `token.json` are listed in `.gitignore` and will
+> never be committed to the repository.
+
+---
+
 ## How to run
 
 All commands are run in PowerShell from the project folder
 (`C:\Projects\PhotoUploader`).
 
-### Full pipeline (scan + deduplicate)
+### Full pipeline (scan + deduplicate + upload)
 
 ```powershell
 python main.py --dir "C:\path\to\your\photos"
 ```
 
-### Just scan (no deduplication)
+### Just scan (no deduplication or upload)
 
 ```powershell
 python scanner.py --dir "C:\path\to\your\photos"
 ```
 
-### Just deduplicate
+### Just deduplicate (no upload)
 
 ```powershell
 python deduplicator.py --dir "C:\path\to\your\photos"
@@ -64,10 +92,10 @@ python deduplicator.py --dir "C:\path\to\your\photos"
 | `--limit N` | Only process the first N files. Useful for a quick test run. |
 | `--quiet` | Print a short progress line every 100 files instead of one line per file. |
 
-Example — process only the first 10 files, quietly:
+Example — test with just the first 5 files:
 
 ```powershell
-python main.py --dir "C:\path\to\your\photos" --limit 10 --quiet
+python main.py --dir "C:\path\to\your\photos" --limit 5
 ```
 
 ---
@@ -92,13 +120,15 @@ python main.py --dir "C:\path\to\your\photos" --limit 10 --quiet
 
 | File | Purpose |
 |---|---|
-| `main.py` | Entry point — runs the full scan → deduplicate pipeline |
+| `main.py` | Entry point — runs the full scan → deduplicate → upload pipeline |
 | `scanner.py` | Walks a folder and finds photo/video files |
 | `deduplicator.py` | Hashes files and identifies duplicates |
+| `uploader.py` | Authenticates with Google and uploads unique files |
 | `config.py` | Shared constants (extensions, database name, chunk size) |
-| `uploader.py` | Placeholder — Google Photos upload not yet implemented |
-| `requirements.txt` | Dependencies (none active yet; future upload libs listed) |
-| `progress.db` | Created automatically; stores hashes between runs (not in git) |
+| `requirements.txt` | Python packages to install (`pip install -r requirements.txt`) |
+| `credentials.json` | Your Google Cloud OAuth credentials — **not in git** |
+| `token.json` | Your saved login token — created automatically, **not in git** |
+| `progress.db` | Dedup progress database — created automatically, **not in git** |
 
 ---
 
@@ -107,4 +137,4 @@ python main.py --dir "C:\path\to\your\photos" --limit 10 --quiet
 - [x] Scan folders recursively
 - [x] Deduplicate by file content
 - [x] Resumable progress (SQLite)
-- [ ] Upload unique files to Google Photos
+- [x] Upload unique files to Google Photos

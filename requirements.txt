@@ -8,5 +8,5 @@
 # They are commented out (with a leading #) so they are NOT installed yet.
 # Uncomment them when we start building uploader.py.
 #
-# google-auth-oauthlib
-# google-api-python-client
+google-auth-oauthlib
+google-api-python-client

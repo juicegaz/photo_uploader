@@ -16,6 +16,7 @@ import os
 
 import scanner
 import deduplicator
+import uploader
 
 
 def main():
@@ -67,9 +68,10 @@ def main():
     )
     deduplicator.print_dedupe_summary(files_found, unique_files, duplicate_files)
 
-    # Step 3: upload (not implemented yet).
+    # Step 3: upload unique files to Google Photos.
     print()
-    print("Uploading is not implemented yet — local testing only for now.")
+    succeeded, failed = uploader.upload_files(unique_files)
+    uploader.print_upload_summary(succeeded, failed)
 
 
 if __name__ == "__main__":
